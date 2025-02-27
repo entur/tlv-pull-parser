@@ -7,13 +7,40 @@ import java.io.OutputStream;
 /**
  *
  * Pull-parser which allows for drilling down level by level using a child parser.
- * All child parsers work on the same buffer.
- * The parser can be reused by updating the buffer.
+ * All child parsers work on the same byte-array instance.
+ * The parser can be reused by updating the buffer / offset / length.
  */
 
 public class LenientTlvPullParser {
 
-	private byte[] buffer; 
+	public static LenientTlvPullParser newInstance() {
+		return new LenientTlvPullParser();
+	}
+
+	/**
+	 *
+	 * Create new and prepare it for parsing payloads to a specific depth.
+	 * <br><br>
+	 * Note that child parsers will be created on-demand if necessary.
+	 *
+	 * @param depth prepare level
+	 * @return new parser
+	 */
+
+	public static LenientTlvPullParser newInstance(int depth) {
+		LenientTlvPullParser root = new LenientTlvPullParser();
+
+		LenientTlvPullParser parser = root;
+		while(depth > 1) {
+			parser.preparePayloadParsers();
+			parser = parser.tlvPayloadParser;
+			depth--;
+		}
+
+		return root;
+	}
+
+	private byte[] buffer;
 	private int offset;
 	private int limit;
 	
@@ -246,5 +273,15 @@ public class LenientTlvPullParser {
 		out.write(buffer, payloadOffset, payloadLength);
 	}
 
+	/**
+	 *
+	 * Initialize payload parsers
+	 *
+	 */
+
+	protected void preparePayloadParsers() {
+		tlvPayloadParser = new LenientTlvPullParser();
+		tagLengthPayloadParser = new TagLengthPullParser();
+	}
 
 }

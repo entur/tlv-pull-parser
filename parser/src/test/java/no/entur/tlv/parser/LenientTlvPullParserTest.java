@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.util.HexFormat;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class LenientTlvPullParserTest {
@@ -69,6 +70,12 @@ public class LenientTlvPullParserTest {
         } while(true);
 
         return count;
+    }
+
+    @Test
+    public void testPrepare() {
+        LenientTlvPullParser lenientTlvPullParser = LenientTlvPullParser.newInstance(4);
+        assertNotNull(lenientTlvPullParser);
     }
 
 }

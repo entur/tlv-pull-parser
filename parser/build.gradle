@@ -7,5 +7,5 @@ plugins {
 }
 
 dependencies {
-    testImplementation( libs.emvnfccard)
+    testImplementation(libs.emvnfccard)
 }

@@ -14,7 +14,7 @@ public class TagLengthPullParser {
 	}
 
 	public TagLengthPullParser(byte[] buffer) {
-		setPayload(buffer);
+		this(buffer, 0, buffer.length);
 	}
 	
 	public TagLengthPullParser(byte[] buffer, int offset, int length) {
