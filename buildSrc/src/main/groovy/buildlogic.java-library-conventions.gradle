@@ -72,7 +72,7 @@ publishing {
             sign(publishing.publications)
         }
     }
-
+    
 }
 
 
