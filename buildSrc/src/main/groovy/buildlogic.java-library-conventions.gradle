@@ -75,11 +75,4 @@ publishing {
 
 }
 
-nexusPublishing {
-    repositories {
-        sonatype {
-        }
-    }
-}
-
 
