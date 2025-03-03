@@ -5,9 +5,15 @@ on:
       - main
 
 jobs:
-  maven-build-and-release:
-    uses: entur/abt-gha-public/.github/workflows/gradle-release-sona.yml@main
+  gradle-build-and-release:
+    uses: entur/abt-gha-public/.github/workflows/gradle-release-sona.yml@gradleReleaseBuild
     secrets: inherit
     with:
-      server-id: ossrh
       channel-id: ${{ vars.CHANNEL_ID }}
+    secrets:
+      SONATYPE_USERNAME: ${{ secrets.SONATYPE_AUTH_USER }}
+      SONATYPE_PASSWORD: ${{ secrets.SONATYPE_AUTH_TOKEN }}
+      SONATYPE_KEY: ${{ secrets.SONATYPE_GPG_KEY }}
+      SONATYPE_GPG_KEY_NAME: ${{ secrets.SONATYPE_GPG_KEY_NAME }}
+      SONATYPE_GPG_KEY_PASSWORD: ${{ secrets.SONATYPE_GPG_KEY_PASSWORD }}
+      
