@@ -7,7 +7,6 @@ on:
 jobs:
   gradle-build-and-release:
     uses: entur/abt-gha-public/.github/workflows/gradle-release-sona.yml@gradleReleaseBuild
-    secrets: inherit
     with:
       channel-id: ${{ vars.CHANNEL_ID }}
       SONATYPE_USERNAME: ${{ secrets.SONATYPE_AUTH_USER }}
