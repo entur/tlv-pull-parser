@@ -52,9 +52,9 @@ For targeting a structure like
 drill down the built-in payload parser chaining:
 
 ```java
-LenientTlvPullParser fciTemplate = pullParser.parseTagLengthValuePayload(0x6F); // skip to tag + drill down
-if(fciTemplate != null) {
-  LenientTlvPullParser proprietaryTemplate = fciTemplate.parseTagLengthValuePayload(0xA5);
+LenientTlvPullParser rootTemplate = pullParser.parseTagLengthValuePayload(0x6F); // skip to tag + drill down
+if(rootTemplate != null) {
+  LenientTlvPullParser proprietaryTemplate = rootTemplate.parseTagLengthValuePayload(0xA5); // skip to tag + drill down
   if(proprietaryTemplate != null) {
      // process application labal and so on
   }
@@ -64,4 +64,5 @@ if(fciTemplate != null) {
 where each call to `parseTagLengthValuePayload` returns a child `LenientTlvPullParser` which works on the same buffer, 
 but with different offsets. Consuming all child parser contents before accessing the parent parser is not necessary. 
 
-
+# Release
+Release version is determined from the latest release tag. Add `[major|minor|patch]` to the commit message to control version increment. 
