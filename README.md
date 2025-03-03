@@ -56,13 +56,13 @@ LenientTlvPullParser rootTemplate = pullParser.parseTagLengthValuePayload(0x6F);
 if(rootTemplate != null) {
   LenientTlvPullParser proprietaryTemplate = rootTemplate.parseTagLengthValuePayload(0xA5); // skip to tag + drill down
   if(proprietaryTemplate != null) {
-     // process application labal and so on
+     // process application label and so on
   }
 }
 ```
 
 where each call to `parseTagLengthValuePayload` returns a child `LenientTlvPullParser` which works on the same buffer, 
-but with different offsets. Consuming all child parser contents before accessing the parent parser is not necessary. 
+but with different offsets. Consuming all child parser contents before accessing the parent parser again is not necessary. 
 
 # Release
 Release version is determined from the latest release tag. Add `[major|minor|patch]` to the commit message to control version increment. 
