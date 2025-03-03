@@ -8,6 +8,7 @@ jobs:
   gradle-build-and-release:
     uses: entur/abt-gha-public/.github/workflows/gradle-release-sona.yml@gradleReleaseBuild
     secrets: inherit
+
   post-failure-to-slack:
     needs: gradle-build-and-release
     if: failure()
