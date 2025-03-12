@@ -6,7 +6,7 @@ on:
 
 jobs:
   gradle-build-and-release:
-    uses: entur/abt-gha-public/.github/workflows/gradle-release-tag-sona.yml@sonatype2
+    uses: entur/abt-gha-public/.github/workflows/gradle-release-tag-sona.yml@main
     secrets: inherit
 
   post-failure-to-slack:
