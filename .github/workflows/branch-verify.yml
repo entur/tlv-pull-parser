@@ -6,5 +6,5 @@ on:
       - opened
 
 jobs:
-  validate-maven-build:
+  validate-gradle-build:
     uses: entur/abt-gha-public/.github/workflows/validate-jar-gradle-sona.yml@main
