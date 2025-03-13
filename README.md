@@ -65,4 +65,4 @@ where each call to `parseTagLengthValuePayload` returns a child `LenientTlvPullP
 but with different offsets. Consuming all child parser contents before accessing the parent parser again is not necessary. 
 
 # Release
-Release version is determined from the latest release tag. Add `[major|minor|patch]` to the commit message to control version increment. 
+Release version is determined from the latest release tag. Add `[major|minor|patch]` to the commit message to control version increment.
