@@ -7,7 +7,7 @@ on:
 
 jobs:
   gradle-build-and-release:
-    uses: entur/abt-gha-public/.github/workflows/gradle-open-source-release-current-tag-to-maven-central.yml
+    uses: entur/abt-gha-public/.github/workflows/gradle-open-source-release-current-tag-to-maven-central.yml@openSource
     secrets: inherit
     with:
       tasks: build publishToSonatype
