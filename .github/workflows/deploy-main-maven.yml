@@ -1,0 +1,36 @@
+
+name: Validate, build and deploy
+on:
+  pull_request:
+    types:
+      - synchronize
+      - opened
+
+jobs:
+  maven-build-and-release:
+    if: "!contains(github.event.head_commit.message, '[skip-release]')"
+    uses: entur/abt-gha-public/.github/workflows/maven-open-source-increment-version-and-release-to-maven-central.yml@openSource
+    secrets: inherit
+
+  maven-build:
+    if: "contains(github.event.head_commit.message, '[skip-release]')"
+    uses: entur/abt-gha-public/.github/workflows/maven-open-source-verify.yml@openSource
+
+  post-failure-to-slack:
+    needs: maven-build-and-release
+    if: failure()
+    uses: entur/gha-slack/.github/workflows/post.yml@v2
+    with:
+      channel_id: ${{ vars.CHANNEL_ID }}
+      message: "🔴 maven artifact deploy failed for ${{ github.repository }}\n ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+    secrets: inherit
+
+  post-success-to-slack:
+    needs: maven-build-and-release
+    if: success()
+    uses: entur/gha-slack/.github/workflows/post.yml@v2
+    with:
+      channel_id: ${{ vars.CHANNEL_ID}}
+      message: "🟢 maven artifact deploy success for ${{ github.repository }}\n ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+    secrets: inherit
+
