@@ -33,4 +33,3 @@ jobs:
       channel_id: ${{ vars.CHANNEL_ID}}
       message: "🟢 maven artifact deploy success for ${{ github.repository }}\n ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
     secrets: inherit
-
