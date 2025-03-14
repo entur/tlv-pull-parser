@@ -11,6 +11,7 @@ jobs:
     secrets: inherit
     with:
       tasks: build publishToSonatype
+      release-prefix: deploy-tag-gradle-
 
   post-failure-to-slack:
     needs: gradle-build-and-release

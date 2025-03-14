@@ -12,6 +12,7 @@ jobs:
     secrets: inherit
     with:
       tasks: build publishToSonatype
+      release-prefix: deploy-main-gradle-
 
   gradle-build:
     if: "contains(github.event.head_commit.message, '[skip-release]')"

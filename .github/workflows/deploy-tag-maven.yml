@@ -9,7 +9,8 @@ jobs:
   maven-build-and-release:
     uses: entur/abt-gha-public/.github/workflows/maven-open-source-release-current-tag-to-maven-central.yml@openSource
     secrets: inherit
-
+    with:
+      release-prefix: deploy-tag-maven-
   post-failure-to-slack:
     needs: maven-build-and-release
     if: failure()

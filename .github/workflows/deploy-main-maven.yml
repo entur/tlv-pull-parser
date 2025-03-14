@@ -11,6 +11,8 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip-release]')"
     uses: entur/abt-gha-public/.github/workflows/maven-open-source-increment-version-and-release-to-maven-central.yml@openSource
     secrets: inherit
+    with:
+      release-prefix: deploy-main-maven-
 
   maven-build:
     if: "contains(github.event.head_commit.message, '[skip-release]')"
