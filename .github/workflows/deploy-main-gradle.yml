@@ -1,13 +1,22 @@
-name: Validate, build and deploy tag/release
+name: Validate, build and deploy
 on:
-  push:
-    tags:
-      - '**'
+  pull_request:
+    types:
+      - synchronize
+      - opened
 
 jobs:
   gradle-build-and-release:
-    uses: entur/abt-gha-public/.github/workflows/gradle-release-tag-sona.yml@main
+    if: "!contains(github.event.head_commit.message, '[skip-release]')"
+    uses: entur/abt-gha-public/.github/workflows/gradle-open-source-increment-version-and-release-to-maven-central.yml@openSource
     secrets: inherit
+    with:
+      tasks: build publishToSonatype
+      release-prefix: deploy-main-gradle-
+
+  gradle-build:
+    if: "contains(github.event.head_commit.message, '[skip-release]')"
+    uses: entur/abt-gha-public/.github/workflows/gradle-open-source-verify.yml@openSource
 
   post-failure-to-slack:
     needs: gradle-build-and-release
