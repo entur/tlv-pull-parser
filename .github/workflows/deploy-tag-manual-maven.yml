@@ -1,0 +1,34 @@
+name: deploy tag maven manual
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Target tag'
+        required: true
+        type: string
+
+jobs:
+  deploy-tag-maven:
+    uses: entur/abt-gha-public/.github/workflows/maven-open-source-release-current-tag-to-maven-central.yml@openSource
+    secrets: inherit
+    with:
+      release-prefix: deploy-tag-maven-
+      ref: ${{ inputs.tag }}
+  post-failure-to-slack:
+    needs: deploy-tag-maven
+    if: failure()
+    uses: entur/gha-slack/.github/workflows/post.yml@v2
+    with:
+      channel_id: ${{ vars.CHANNEL_ID }}
+      message: "🔴 maven artifact deploy failed for ${{ github.repository }}\n ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+    secrets: inherit
+
+  post-success-to-slack:
+    needs: deploy-tag-maven
+    if: success()
+    uses: entur/gha-slack/.github/workflows/post.yml@v2
+    with:
+      channel_id: ${{ vars.CHANNEL_ID}}
+      message: "🟢 maven artifact deploy success for ${{ github.repository }}\n ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+    secrets: inherit
+

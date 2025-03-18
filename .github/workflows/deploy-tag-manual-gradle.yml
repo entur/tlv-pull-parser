@@ -1,0 +1,37 @@
+name: deploy tag gradle manual
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Target tag'
+        required: true
+        type: string
+
+jobs:
+  deploy-tag-gradle:
+    uses: entur/abt-gha-public/.github/workflows/gradle-open-source-release-current-tag-to-maven-central.yml@openSource
+    secrets: inherit
+    with: 
+      tasks: build publishToSonatype
+      release-prefix: deploy-tag-gradle-
+      ref: ${{ inputs.tag }}
+
+  post-failure-to-slack:
+    needs: deploy-tag-gradle
+    if: failure()
+    uses: entur/gha-slack/.github/workflows/post.yml@v2
+    with:
+      channel_id: ${{ vars.CHANNEL_ID }}
+      message: "🔴 Gradle artifact deploy failed for ${{ github.repository }}\n ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+    secrets: inherit
+
+  post-success-to-slack:
+    needs: deploy-tag-gradle
+    if: success()
+    uses: entur/gha-slack/.github/workflows/post.yml@v2
+    with:
+      channel_id: ${{ vars.CHANNEL_ID}}
+      message: "🟢 Gradle artifact deploy success for ${{ github.repository }}\n ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+    secrets: inherit
+
+
