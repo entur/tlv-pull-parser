@@ -31,3 +31,4 @@ jobs:
       message: "🟢 Gradle artifact deploy success for ${{ github.repository }}\n ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
     secrets: inherit
 
+
