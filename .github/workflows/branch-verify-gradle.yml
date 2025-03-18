@@ -1,4 +1,4 @@
-name: Validate branch
+name: branch verify gradle
 on:
   pull_request:
     types:
@@ -6,5 +6,5 @@ on:
       - opened
 
 jobs:
-  validate-gradle-build:
+  branch-verify-gradle:
     uses: entur/abt-gha-public/.github/workflows/gradle-open-source-verify.yml@openSource

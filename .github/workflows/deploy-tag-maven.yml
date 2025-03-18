@@ -1,4 +1,4 @@
-name: Validate, build and deploy tag/release
+name: deploy tag maven
 on:
   pull_request:
     types:
@@ -6,13 +6,13 @@ on:
       - opened
 
 jobs:
-  maven-build-and-release:
+  deploy-tag-maven:
     uses: entur/abt-gha-public/.github/workflows/maven-open-source-release-current-tag-to-maven-central.yml@openSource
     secrets: inherit
     with:
       release-prefix: deploy-tag-maven-
   post-failure-to-slack:
-    needs: maven-build-and-release
+    needs: deploy-tag-maven
     if: failure()
     uses: entur/gha-slack/.github/workflows/post.yml@v2
     with:
@@ -21,7 +21,7 @@ jobs:
     secrets: inherit
 
   post-success-to-slack:
-    needs: maven-build-and-release
+    needs: deploy-tag-maven
     if: success()
     uses: entur/gha-slack/.github/workflows/post.yml@v2
     with:

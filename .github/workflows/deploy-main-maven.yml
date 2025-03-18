@@ -1,5 +1,5 @@
 
-name: Validate, build and deploy
+name: deploy main maven
 on:
   pull_request:
     types:
@@ -7,7 +7,7 @@ on:
       - opened
 
 jobs:
-  maven-build-and-release:
+  deploy-main-maven:
     if: "!contains(github.event.head_commit.message, '[skip-release]')"
     uses: entur/abt-gha-public/.github/workflows/maven-open-source-increment-version-and-release-to-maven-central.yml@openSource
     secrets: inherit
@@ -19,7 +19,7 @@ jobs:
     uses: entur/abt-gha-public/.github/workflows/maven-open-source-verify.yml@openSource
 
   post-failure-to-slack:
-    needs: maven-build-and-release
+    needs: deploy-main-maven
     if: failure()
     uses: entur/gha-slack/.github/workflows/post.yml@v2
     with:
@@ -28,7 +28,7 @@ jobs:
     secrets: inherit
 
   post-success-to-slack:
-    needs: maven-build-and-release
+    needs: deploy-main-maven
     if: success()
     uses: entur/gha-slack/.github/workflows/post.yml@v2
     with:

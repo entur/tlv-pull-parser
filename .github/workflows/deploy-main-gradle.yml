@@ -1,4 +1,4 @@
-name: Validate, build and deploy
+name: deploy main gradle
 on:
   pull_request:
     types:
@@ -6,7 +6,7 @@ on:
       - opened
 
 jobs:
-  gradle-build-and-release:
+  deploy-main-gradle:
     if: "!contains(github.event.head_commit.message, '[skip-release]')"
     uses: entur/abt-gha-public/.github/workflows/gradle-open-source-increment-version-and-release-to-maven-central.yml@openSource
     secrets: inherit
@@ -19,7 +19,7 @@ jobs:
     uses: entur/abt-gha-public/.github/workflows/gradle-open-source-verify.yml@openSource
 
   post-failure-to-slack:
-    needs: gradle-build-and-release
+    needs: deploy-main-gradle
     if: failure()
     uses: entur/gha-slack/.github/workflows/post.yml@v2
     with:
@@ -28,7 +28,7 @@ jobs:
     secrets: inherit
 
   post-success-to-slack:
-    needs: gradle-build-and-release
+    needs: deploy-main-gradle
     if: success()
     uses: entur/gha-slack/.github/workflows/post.yml@v2
     with:

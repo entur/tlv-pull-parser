@@ -1,4 +1,4 @@
-name: Validate, build and deploy tag/release
+name: deploy tag gradle
 on:
   pull_request:
     types:
@@ -6,7 +6,7 @@ on:
       - opened
 
 jobs:
-  gradle-build-and-release:
+  deploy-tag-gradle:
     uses: entur/abt-gha-public/.github/workflows/gradle-open-source-release-current-tag-to-maven-central.yml@openSource
     secrets: inherit
     with:
@@ -14,7 +14,7 @@ jobs:
       release-prefix: deploy-tag-gradle-
 
   post-failure-to-slack:
-    needs: gradle-build-and-release
+    needs: deploy-tag-gradle
     if: failure()
     uses: entur/gha-slack/.github/workflows/post.yml@v2
     with:
@@ -23,7 +23,7 @@ jobs:
     secrets: inherit
 
   post-success-to-slack:
-    needs: gradle-build-and-release
+    needs: deploy-tag-gradle
     if: success()
     uses: entur/gha-slack/.github/workflows/post.yml@v2
     with:
