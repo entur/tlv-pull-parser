@@ -1,11 +1,6 @@
 name: deploy tag maven manual
 on:
   workflow_dispatch:
-    inputs:
-      tag:
-        description: 'Target tag'
-        required: true
-        type: string
 
 jobs:
   deploy-tag-maven:
@@ -13,7 +8,6 @@ jobs:
     secrets: inherit
     with:
       release-prefix: deploy-tag-maven-
-      ref: ${{ inputs.tag }}
   post-failure-to-slack:
     needs: deploy-tag-maven
     if: failure()

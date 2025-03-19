@@ -1,11 +1,6 @@
 name: deploy tag gradle manual
 on:
   workflow_dispatch:
-    inputs:
-      tag:
-        description: 'Target tag'
-        required: true
-        type: string
 
 jobs:
   deploy-tag-gradle:
@@ -14,7 +9,6 @@ jobs:
     with: 
       tasks: build publishToSonatype
       release-prefix: deploy-tag-gradle-
-      ref: ${{ inputs.tag }}
 
   post-failure-to-slack:
     needs: deploy-tag-gradle
