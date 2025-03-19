@@ -1,4 +1,4 @@
-name: Validate branch
+name: Verify PR
 on:
   pull_request:
     types:
@@ -6,5 +6,5 @@ on:
       - opened
 
 jobs:
-  validate-gradle-build:
-    uses: entur/abt-gha-public/.github/workflows/validate-jar-gradle-sona.yml@main
+  verify-pr:
+    uses: entur/abt-gha-public/.github/workflows/gradle-open-source-verify.yml@v1.0.0
