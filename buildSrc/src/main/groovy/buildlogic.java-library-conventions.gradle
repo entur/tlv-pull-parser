@@ -56,11 +56,12 @@ publishing {
             }
         }
     }
-}
-repositories {
-    maven {
-        url = stagingRepositoryPath
-    }
-}
 
+    repositories {
+        maven {
+            url = stagingRepositoryPath
+        }
+    }
+    
+}
 
