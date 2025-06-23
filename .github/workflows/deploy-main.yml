@@ -7,8 +7,12 @@ on:
 jobs:
   deploy-main-gradle:
     if: "!contains(github.event.head_commit.message, '[skip-release]')"
-    uses: entur/abt-gha-public/.github/workflows/gradle-open-source-increment-version-and-release-to-maven-central.yml@v1.0.0
+    uses: entur/gha-maven-central/.github/workflows/gradle-publish.yml@main
     secrets: inherit
+    with:
+      next_version: patch
+      version_strategy: tag
+      version_tag_prefix: release-
 
   gradle-build:
     if: "contains(github.event.head_commit.message, '[skip-release]')"
