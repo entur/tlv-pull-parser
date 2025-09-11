@@ -84,11 +84,11 @@ public class TlvPrettyPrinter {
 		this.values = values;
 	}
 
-	public String responseADPU(byte[] buffer) {
+	public String responseAPDU(byte[] buffer) {
 		return tlv(buffer, 0, buffer.length - 2).toString();
 	}
 
-	public String responseADPU(byte[] buffer, int indent) {
+	public String responseAPDU(byte[] buffer, int indent) {
 		return tlv(buffer, 0, buffer.length - 2, indent).toString();
 	}
 

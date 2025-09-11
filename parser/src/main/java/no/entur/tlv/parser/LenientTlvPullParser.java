@@ -197,12 +197,12 @@ public class LenientTlvPullParser {
 
 	/**
 	 *
-	 * Set a payload from an ADPU response.
+	 * Set a payload from an APDU response.
 	 *
-	 * @param bytes response ADPU, including to status bytes.
+	 * @param bytes response APDU, including to status bytes.
 	 */
 	
-	public void setResponseAdpuPayload(byte[] bytes) {
+	public void setResponseApduPayload(byte[] bytes) {
 		setBuffer(bytes, 0, bytes.length - 2);
 	}
 

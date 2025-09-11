@@ -14,12 +14,12 @@ The project has zero dependencies.
 [European Union Public Licence v1.2](https://eupl.eu/).
 
 # Usage
-Get your ADPU response, then create a parser:
+Get your APDU response, then create a parser:
 
 ```java
-byte[] responseAdpu = ...
+byte[] responseApdu = ...
 
-LenientTlvPullParser pullParser = new LenientTlvPullParser(responseAdpu, 0, responseAdpu.length - 2);
+LenientTlvPullParser pullParser = new LenientTlvPullParser(responseApdu, 0, responseApdu.length - 2);
 ```
 
 and note that parser instances are reusable. 
