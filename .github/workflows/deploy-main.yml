@@ -12,7 +12,7 @@ jobs:
     with:
       next_version: patch
       version_strategy: tag
-      version_tag_prefix: release-
+      version_tag_prefix: v
 
   post-failure-to-slack:
     needs: deploy-main-gradle
