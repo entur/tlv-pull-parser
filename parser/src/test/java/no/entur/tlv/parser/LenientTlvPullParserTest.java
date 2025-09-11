@@ -36,13 +36,13 @@ public class LenientTlvPullParserTest {
     //                      9F 6E 07 -- Form Factor Indicator (FFI)
     //                               05 78 00 00 30 30 00
 
-    private static final byte[] PPSE_RESPONSE_ADPU = HexFormat.of().parseHex("6F568407A0000000041010A54B50104465626974204D6173746572636172648701015F2D086E6F656E646173769F1101019F12104D617374657263617264204465626574BF0C119F0A04000101019F6E07057800003030009000");
+    private static final byte[] PPSE_RESPONSE_APDU = HexFormat.of().parseHex("6F568407A0000000041010A54B50104465626974204D6173746572636172648701015F2D086E6F656E646173769F1101019F12104D617374657263617264204465626574BF0C119F0A04000101019F6E07057800003030009000");
 
     @Test
     public void testParseSelectEmvApplicationResponse() {
         LenientTlvPullParser pullParser = new LenientTlvPullParser();
 
-        pullParser.setBuffer(PPSE_RESPONSE_ADPU, 0, PPSE_RESPONSE_ADPU.length - 2);
+        pullParser.setBuffer(PPSE_RESPONSE_APDU, 0, PPSE_RESPONSE_APDU.length - 2);
 
         int count = -1;
 
