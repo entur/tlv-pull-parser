@@ -16,6 +16,8 @@ jobs:
 
   post-failure-to-slack:
     needs: deploy-main-gradle
+    permissions:
+      contents: read
     if: failure()
     uses: entur/gha-slack/.github/workflows/post.yml@v2
     with:
@@ -26,6 +28,8 @@ jobs:
 
   post-success-to-slack:
     needs: deploy-main-gradle
+    permissions:
+      contents: read
     if: success()
     uses: entur/gha-slack/.github/workflows/post.yml@v2
     with:
