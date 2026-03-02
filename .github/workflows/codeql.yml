@@ -21,7 +21,8 @@ jobs:
       contents: write
       security-events: write
       actions: read
-      pull-requests: read
+      pull-requests: write
+      issues: write
     with:
       java_distribution: "temurin"
 
