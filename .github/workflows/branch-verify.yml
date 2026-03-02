@@ -8,3 +8,5 @@ on:
 jobs:
   verify-pr:
     uses: entur/abt-gha-public/.github/workflows/gradle-open-source-verify.yml@main
+    permissions:
+      contents: read
