@@ -2,5 +2,5 @@
 # https://docs.gradle.org/current/userguide/platforms.html#sub::toml-dependencies-format
 
 [libraries]
-emvnfccard = { group = "com.github.devnied.emvnfccard", name = "library", version = "3.0.1" }
-commonscsv = { group = "org.apache.commons", name = "commons-csv", version = "1.13.0" }
+emvnfccard = { group = "com.github.devnied.emvnfccard", name = "library", version = "3.1.0" }
+commonscsv = { group = "org.apache.commons", name = "commons-csv", version = "1.14.1" }

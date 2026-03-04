@@ -3,7 +3,7 @@
  */
 
 plugins {
-    id 'org.jreleaser' version '1.18.0' apply false
+    id 'org.jreleaser' version '1.23.0' apply false
 }
 
 ext.stagingRepositoryPath = "${rootDir.getCanonicalFile()}/build/staging-deploy"
