@@ -16,18 +16,24 @@ jobs:
 
   post-failure-to-slack:
     needs: deploy-main-gradle
+    permissions:
+      contents: read
     if: failure()
     uses: entur/gha-slack/.github/workflows/post.yml@v3
     with:
       channel_id: ${{ vars.CHANNEL_ID }}
       message: "🔴 Gradle artifact deploy failed for ${{ github.repository }}\n ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-    secrets: inherit
+    secrets:
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
   post-success-to-slack:
     needs: deploy-main-gradle
+    permissions:
+      contents: read
     if: success()
     uses: entur/gha-slack/.github/workflows/post.yml@v3
     with:
       channel_id: ${{ vars.CHANNEL_ID}}
       message: "🟢 Gradle artifact deploy success for ${{ github.repository }}\n ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-    secrets: inherit
+    secrets:
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
