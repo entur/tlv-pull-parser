@@ -36,5 +36,3 @@ jobs:
       actions: read
       pull-requests: write
       issues: write
-    with:
-      java_distribution: "temurin"
