@@ -29,7 +29,7 @@ jobs:
   code-scan:
     if: github.event_name != 'pull_request'
     name: CodeQL Scan
-    uses: entur/gha-security/.github/workflows/code-scan-main-branch.yml@v2
+    uses: skjolber/gha-security/.github/workflows/code-scan-main-branch.yml@adjustPermissions
     permissions:
       contents: write
       security-events: write
