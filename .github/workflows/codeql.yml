@@ -13,19 +13,6 @@ on:
     - cron: "0 4 * * TUE" # Run Monday at 3AM UTC
 
 jobs:
-  code-scan:
-    if: github.event_name != 'pull_request'
-    name: CodeQL Scan
-    uses: entur/gha-security/.github/workflows/code-scan.yml@v2
-    permissions:
-      contents: write
-      security-events: write
-      actions: read
-      pull-requests: write
-      issues: write
-    with:
-      java_distribution: "temurin"
-
   code-scan-pull-request:
     if: github.event_name == 'pull_request'
     name: CodeQL Scan
