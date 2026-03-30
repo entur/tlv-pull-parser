@@ -6,9 +6,11 @@ on:
 
 jobs:
   deploy-main-gradle:
-    if: "!contains(github.event.head_commit.message, '[skip-release]')"
     uses: entur/gha-maven-central/.github/workflows/gradle-publish.yml@main
     secrets: inherit
+    permissions:
+      contents: write
+      issues: write
     with:
       next_version: patch
       version_strategy: tag
