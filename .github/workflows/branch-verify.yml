@@ -7,7 +7,22 @@ on:
 
 jobs:
   verify-pr:
-    uses: entur/abt-gha-public/.github/workflows/gradle-open-source-verify.yml@v1
     # no secrets necessary
     permissions:
       contents: read
+    runs-on: "ubuntu-24.04"
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up Java 25
+        uses: actions/setup-java@v5
+        with:
+          java-version: 25
+      - name: Restore Gradle cache
+        uses: entur/gradle-cache-action/restore@v1
+      - name: Build with Gradle Wrapper
+        run: ./gradlew build
+      - name: Save Gradle cache
+        if: always()                  # run even on failure so failed-build caches are stored
+        uses: entur/gradle-cache-action/save@v1
+        with:
+          build-outcome: ${{ job.status }}
