@@ -19,11 +19,11 @@ jobs:
           java-version: 25
           distribution: temurin
       - name: Restore Gradle cache
-        uses: entur/gradle-cache-action/restore@main
+        uses: entur/gradle-cache-action/restore@v1
       - name: Build with Gradle Wrapper
         run: ./gradlew build
       - name: Save Gradle cache
         if: always()                  # run even on failure so failed-build caches are stored
-        uses: entur/gradle-cache-action/save@main
+        uses: entur/gradle-cache-action/save@v1
         with:
           build-outcome: ${{ job.status }}
