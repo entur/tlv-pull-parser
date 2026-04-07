@@ -24,6 +24,6 @@ jobs:
         run: ./gradlew build
       - name: Save Gradle cache
         if: always()                  # run even on failure so failed-build caches are stored
-        uses: entur/gradle-cache-action/save@v1
+        uses: entur/gradle-cache-action/save@main
         with:
           build-outcome: ${{ job.status }}
