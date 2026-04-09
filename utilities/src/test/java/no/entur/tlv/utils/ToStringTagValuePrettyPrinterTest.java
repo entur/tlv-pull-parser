@@ -22,6 +22,8 @@ public class ToStringTagValuePrettyPrinterTest {
 		ToStringTagValuePrettyPrinter.format(toString, 0, builder);
 		
 		System.out.println(builder);
+
+		throw new RuntimeException("TEST");
 	}
 
 }
