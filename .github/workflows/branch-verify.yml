@@ -22,6 +22,8 @@ jobs:
         uses: entur/gradle-cache-action/restore@removeEnvOutput
       - name: Build with Gradle Wrapper
         run: ./gradlew build
+      - name: List .gradle directory
+        run: ls -l .gradle
       - name: Save Gradle cache
         if: always()                  # run even on failure so failed-build caches are stored
         uses: entur/gradle-cache-action/save@removeEnvOutput
