@@ -23,7 +23,7 @@ public class ToStringTagValuePrettyPrinterTest {
 		
 		System.out.println(builder);
 
-		throw new RuntimeException("TEST");
+		throw new RuntimeException("Not really a test, just printing the formatted string");
 	}
 
 }
