@@ -1,25 +1,31 @@
-name: Deploy main
+name: Deploy to Maven Central from main
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+    inputs:
+      version-increment:
+        description: 'Version-increment'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
 
 jobs:
-  deploy-main-gradle:
-    uses: entur/gha-maven-central/.github/workflows/gradle-publish.yml@main
+  deploy-tag-gradle:
+    uses: entur/gha-maven-central/.github/workflows/gradle-publish.yml@v1
     secrets: inherit
     permissions:
       contents: write
       issues: write
     with:
-      next_version: patch
-      version_strategy: tag
-      version_tag_prefix: v
+      next_version: ${{ inputs.version-increment }}
+      version_strategy: v
 
   post-failure-to-slack:
-    needs: deploy-main-gradle
     permissions:
       contents: read
+    needs: deploy-tag-gradle
     if: failure()
     uses: entur/gha-slack/.github/workflows/post.yml@v3
     with:
@@ -28,12 +34,14 @@ jobs:
     secrets: inherit
 
   post-success-to-slack:
-    needs: deploy-main-gradle
     permissions:
       contents: read
+    needs: deploy-tag-gradle
     if: success()
     uses: entur/gha-slack/.github/workflows/post.yml@v3
     with:
       channel_id: ${{ vars.CHANNEL_ID}}
       message: "🟢 Gradle artifact deploy success for ${{ github.repository }}\n ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
     secrets: inherit
+
+
