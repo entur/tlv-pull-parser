@@ -192,7 +192,8 @@ public class TlvPrettyPrinter {
 			offset++;
 
 			if((b & 0xFF) == 0x80) {
-				// indefinite length, which ISO/IEC 7816-4 does not use
+				// indefinite length, which ISO/IEC 7816-4 does not use; this level ends here
+				stringBuilder.append('\n');
 				return;
 			}
 
@@ -368,10 +369,9 @@ public class TlvPrettyPrinter {
 			offset++;
 
 			if((b & 0xFF) == 0x80) {
-				// indefinite length, which ISO/IEC 7816-4 does not use
-				return;
-			}
-
+				// a tag-length list has a one-byte length (EMV Book 3, 5.4), so this is 128 rather than the indefinite length form
+				payloadLength = 128;
+			} else
 			if ((b & 0x80) == 0x00) {
 				/* short form */
 				payloadLength = b;
@@ -464,10 +464,9 @@ public class TlvPrettyPrinter {
 			offset++;
 
 			if((b & 0xFF) == 0x80) {
-				// indefinite length, which ISO/IEC 7816-4 does not use
-				return;
-			}
-
+				// a tag-length list has a one-byte length (EMV Book 3, 5.4), so this is 128 rather than the indefinite length form
+				payloadLength = 128;
+			} else
 			if ((b & 0x80) == 0x00) {
 				/* short form */
 				payloadLength = b;
