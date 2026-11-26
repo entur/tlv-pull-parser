@@ -80,7 +80,7 @@ public class LenientTlvPullParser {
 			if(offset >= limit) {
 				return -1;
 			}
-		} while(b == 0x00 || b == 0xFF);
+		} while(b == 0x00 || b == (byte) 0xFF); // padding (b is a sign-extended byte)
 
 		switch (b & 0x1F) {
 		case 0x1F:

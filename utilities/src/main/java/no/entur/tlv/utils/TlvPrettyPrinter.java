@@ -114,8 +114,6 @@ public class TlvPrettyPrinter {
 
 	public void tlv(byte[] buffer, int offset, int limit, StringBuilder stringBuilder, int level, int indent) {
 		while(offset < limit) {
-			int tagStartOffset = offset;
-
 			int tag;
 			int b;
 			do {
@@ -124,7 +122,10 @@ public class TlvPrettyPrinter {
 				if(offset >= limit) {
 					return;
 				}
-			} while(b == 0x00 || b == 0xFF);
+			} while(b == 0x00 || b == (byte) 0xFF); // padding (b is a sign-extended byte)
+
+			// after any padding
+			int tagStartOffset = offset - 1;
 
 			boolean constructed = (b & 0x20) != 0;
 
@@ -290,8 +291,6 @@ public class TlvPrettyPrinter {
 
 	public void tl(byte[] buffer, int offset, int limit, StringBuilder stringBuilder, int level, int indent) {
 		while(offset < limit) {
-			int tagStartOffset = offset;
-
 			int tag;
 			int b;
 			do {
@@ -300,7 +299,10 @@ public class TlvPrettyPrinter {
 				if(offset >= limit) {
 					return;
 				}
-			} while(b == 0x00 || b == 0xFF);
+			} while(b == 0x00 || b == (byte) 0xFF); // padding (b is a sign-extended byte)
+
+			// after any padding
+			int tagStartOffset = offset - 1;
 
 			boolean constructed = (b & 0x20) != 0;
 
@@ -389,8 +391,6 @@ public class TlvPrettyPrinter {
 	
 	public void tagLengthWithExternalValue(byte[] buffer, int offset, int limit, StringBuilder stringBuilder, int level, int indent, byte[] values, int valuesOffset) {
 		while(offset < limit) {
-			int tagStartOffset = offset;
-
 			int tag;
 			int b;
 			do {
@@ -399,7 +399,10 @@ public class TlvPrettyPrinter {
 				if(offset >= limit) {
 					return;
 				}
-			} while(b == 0x00 || b == 0xFF);
+			} while(b == 0x00 || b == (byte) 0xFF); // padding (b is a sign-extended byte)
+
+			// after any padding
+			int tagStartOffset = offset - 1;
 
 			boolean constructed = (b & 0x20) != 0;
 
