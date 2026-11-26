@@ -40,7 +40,10 @@ public class LenientTlvPullParser {
 		return root;
 	}
 
-	private byte[] buffer;
+	private static final byte[] EMPTY = new byte[0];
+
+	// empty until a buffer is set
+	private byte[] buffer = EMPTY;
 	private int offset;
 	private int limit;
 	
@@ -167,7 +170,17 @@ public class LenientTlvPullParser {
 		return payload;
 	}
 
+	/**
+	 * Get the offset of the payload in the buffer. When there is no payload, this is the offset of the next tag.
+	 *
+	 * @return payload offset
+	 */
+
 	public int getBufferPayloadOffset() {
+		if(payloadLength == 0) {
+			// includes when no tag was returned
+			return offset;
+		}
 		return payloadOffset;
 	}
 	
@@ -181,9 +194,9 @@ public class LenientTlvPullParser {
 
 	public LenientTlvPullParser parseTagLengthValuePayload() {
 		if(tlvPayloadParser == null) {
-			tlvPayloadParser = new LenientTlvPullParser(buffer, payloadOffset, payloadLength);
+			tlvPayloadParser = new LenientTlvPullParser(buffer, getBufferPayloadOffset(), payloadLength);
 		} else {
-			tlvPayloadParser.setBufferOffsetLength(payloadOffset, payloadLength);
+			tlvPayloadParser.setBufferOffsetLength(getBufferPayloadOffset(), payloadLength);
 		}
 		
 		return tlvPayloadParser;
@@ -191,9 +204,9 @@ public class LenientTlvPullParser {
 	
 	public TagLengthPullParser parseTagLengthPayload() {
 		if(tagLengthPayloadParser == null) {
-			tagLengthPayloadParser = new TagLengthPullParser(buffer, payloadOffset, payloadLength);
+			tagLengthPayloadParser = new TagLengthPullParser(buffer, getBufferPayloadOffset(), payloadLength);
 		} else {
-			tagLengthPayloadParser.setPayloadOffsetLength(payloadOffset, payloadLength);
+			tagLengthPayloadParser.setPayloadOffsetLength(getBufferPayloadOffset(), payloadLength);
 		}
 		
 		return tagLengthPayloadParser;
@@ -214,9 +227,10 @@ public class LenientTlvPullParser {
 		this.buffer = bytes;
 		setBufferOffsetLength(offset, length);
 
-		// set array, but do not set offset/length on child parsers
+		// set array, but do not set offset/length on child parsers;
+		// they are empty until a payload is parsed
 		if(tlvPayloadParser != null) {
-			tlvPayloadParser.setBuffer(bytes);
+			tlvPayloadParser.setBuffer(bytes, 0, 0);
 		}
 		if(tagLengthPayloadParser != null) {
 			tagLengthPayloadParser.setPayloadBuffer(bytes);
