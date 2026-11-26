@@ -12,6 +12,8 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TlvPrettyPrinterTest {
@@ -72,6 +74,69 @@ public class TlvPrettyPrinterTest {
 		String prettyPrinted = PRETTY_PRINTER.tlv(MESSAGE3).toString();
 		System.out.println(prettyPrinted);
 		assertTrue(prettyPrinted.contains("Processing Options Data Object List (PDOL)"));
+	}
+
+	@Test
+	public void testLongFormLengthOverflowingToNegativeIsMalformed() {
+		// 5A 02 12 34, then 5A with length 84 80 00 00 00 = 0x80000000, which is negative as an int
+		byte[] bytes = HexFormat.of().parseHex("5A021234" + "5A84800000004142");
+
+		String prettyPrinted = assertDoesNotThrow(() -> PRETTY_PRINTER.tlv(bytes).toString());
+		assertTrue(prettyPrinted.contains("12 34"));
+		assertFalse(prettyPrinted.contains("41 42"));
+	}
+
+	@Test
+	public void testLongFormLengthOverflowingOffsetIsMalformed() {
+		// 5A 02 12 34, then 5A with length 84 7F FF FF FF = Integer.MAX_VALUE, so offset + length overflows
+		byte[] bytes = HexFormat.of().parseHex("5A021234" + "5A847FFFFFFF4142");
+
+		String prettyPrinted = assertDoesNotThrow(() -> PRETTY_PRINTER.tlv(bytes).toString());
+		assertTrue(prettyPrinted.contains("12 34"));
+		assertFalse(prettyPrinted.contains("41 42"));
+	}
+
+	@Test
+	public void testLongFormLengthWithMoreBytesThanFitInAnIntIsMalformed() {
+		// 5A 02 12 34, then 5A with length 85 01 00 00 00 00 = 2^32, which truncates to 0 as an int
+		byte[] bytes = HexFormat.of().parseHex("5A021234" + "5A8501000000004142");
+
+		String prettyPrinted = assertDoesNotThrow(() -> PRETTY_PRINTER.tlv(bytes).toString());
+		assertTrue(prettyPrinted.contains("12 34"));
+		assertFalse(prettyPrinted.contains("41 42"));
+	}
+
+	@Test
+	public void testTagLengthWithExternalValueLongFormLengthOverflowingToNegativeIsMalformed() {
+		// 9F02 with length 84 80 00 00 00 = 0x80000000, which is negative as an int, then 9F03 01
+		byte[] tagLengths = HexFormat.of().parseHex("9F028480000000" + "9F0301");
+		byte[] values = HexFormat.of().parseHex("010203");
+
+		StringBuilder output = new StringBuilder();
+		assertDoesNotThrow(() -> PRETTY_PRINTER.tagLengthWithExternalValue(tagLengths, 0, tagLengths.length, output, 0, 0, values, 0));
+	}
+
+	@Test
+	public void testTagLengthWithExternalValueLengthPastValuesIsMalformed() {
+		// 9F02 06, but only three value bytes
+		byte[] tagLengths = HexFormat.of().parseHex("9F0206");
+		byte[] values = HexFormat.of().parseHex("010203");
+
+		StringBuilder output = new StringBuilder();
+		assertDoesNotThrow(() -> PRETTY_PRINTER.tagLengthWithExternalValue(tagLengths, 0, tagLengths.length, output, 0, 0, values, 0));
+	}
+
+	@Test
+	public void testTagLengthWithExternalValue() {
+		// 9F02 with length 81 02, then 9F03 01
+		byte[] tagLengths = HexFormat.of().parseHex("9F028102" + "9F0301");
+		byte[] values = HexFormat.of().parseHex("010203");
+
+		StringBuilder output = new StringBuilder();
+		PRETTY_PRINTER.tagLengthWithExternalValue(tagLengths, 0, tagLengths.length, output, 0, 0, values, 0);
+		String prettyPrinted = output.toString();
+		assertTrue(prettyPrinted.contains(" 01 02\n"), prettyPrinted);
+		assertTrue(prettyPrinted.contains(" 03\n"), prettyPrinted);
 	}
 
 }

@@ -197,8 +197,8 @@ public class TlvPrettyPrinter {
 			} else {
 				/* long form */
 				int count = b & 0x7F;
-				if(offset + count > limit) {
-					// not enough bytes for count
+				if(count > 4 || count > limit - offset) {
+					// length does not fit in an int, or not enough bytes for count
 					return;
 				}
 
@@ -212,7 +212,8 @@ public class TlvPrettyPrinter {
 				}
 			}
 
-			if(offset + payloadLength > limit) {
+			if(payloadLength < 0 || payloadLength > limit - offset) {
+				// length does not fit in an int, or not enough bytes for payload
 				return;
 			}
 
@@ -459,8 +460,8 @@ public class TlvPrettyPrinter {
 			} else {
 				/* long form */
 				int count = b & 0x7F;
-				if(offset + count > limit) {
-					// not enough bytes for count
+				if(count > 4 || count > limit - offset) {
+					// length does not fit in an int, or not enough bytes for count
 					return;
 				}
 
@@ -474,6 +475,11 @@ public class TlvPrettyPrinter {
 				}
 			}
 			
+			if(payloadLength < 0 || payloadLength > values.length - valuesOffset) {
+				// length does not fit in an int, or not enough bytes for value
+				return;
+			}
+
 			ByteArrayKey key = new ByteArrayKey(buffer, tagStartOffset, tagLength);
 			String description = tags.get(key);
 			if(description != null)  {
