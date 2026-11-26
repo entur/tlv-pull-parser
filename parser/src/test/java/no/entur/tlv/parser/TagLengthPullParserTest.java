@@ -1,6 +1,7 @@
 package no.entur.tlv.parser;
 
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.ByteArrayInputStream;
@@ -89,15 +90,31 @@ public class TagLengthPullParserTest {
 	}
 	
 	@Test
-	public void testWriteHeaders() throws IOException {
-		List<ITag> tags =  getTagsWithoutFF();
+	public void testWriteHeadersShortLength() throws IOException {
+		assertWriteHeaders(false);
+	}
+
+	@Test
+	public void testWriteHeadersLongLength() throws IOException {
+		assertWriteHeaders(true);
+	}
+
+	private void assertWriteHeaders(boolean longLength) throws IOException {
+		// all the tags, also those which start with FF
+		List<ITag> tags = getTags();
 
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		ByteArrayOutputStream expectedTagsOutput = new ByteArrayOutputStream();
 
 		int counter = 0;
 		for (ITag iTag : tags) {
 			bout.write(iTag.getTagBytes());
-			bout.write(TLVUtil.getLengthAsBytes(counter));
+			if(longLength) {
+				bout.write(TLVUtil.getLengthAsBytes(counter));
+			} else {
+				bout.write(counter % 127);
+			}
+			expectedTagsOutput.write(iTag.getTagBytes());
 			counter++;
 		}
 		
@@ -105,16 +122,37 @@ public class TagLengthPullParserTest {
 		parser.setPayload(bout.toByteArray(), 0, bout.size());
 		
 		ByteArrayOutputStream tagsOutput = new ByteArrayOutputStream();
-		parser.writeTagsToStream(tagsOutput);
+		int count = parser.writeTagsToStream(tagsOutput);
 
+		assertArrayEquals(expectedTagsOutput.toByteArray(), tagsOutput.toByteArray());
+		assertEquals(tags.size(), count);
+
+		// nothing left
+		assertEquals(-1, parser.nextTag());
+
+		// the same tags and as many, one by one
 		parser.setPayload(bout.toByteArray(), 0, bout.size());
-		
-		TLVInputStream in = new TLVInputStream(new ByteArrayInputStream(bout.toByteArray()));
-		
+
+		counter = 0;
 		for (ITag iTag : tags) {
-			assertEquals(in.readTag(), parser.nextTag(), iTag.toString());
-			assertEquals(in.readLength(), parser.getLength(), iTag.toString());
+			assertEquals(toTag(iTag.getTagBytes()), parser.nextTag(), iTag.toString());
+			assertEquals(longLength ? counter : counter % 127, parser.getLength(), iTag.toString());
+			counter++;
 		}
+		assertEquals(-1, parser.nextTag());
+	}
+
+	/**
+	 * The value which {@linkplain TagLengthPullParser#nextTag()} returns for a tag: without the top bit of the
+	 * subsequent bytes.
+	 */
+
+	private static int toTag(byte[] bytes) {
+		int tag = bytes[0] & 0xFF;
+		for (int i = 1; i < bytes.length; i++) {
+			tag = (tag << 8) | (bytes[i] & 0x7F);
+		}
+		return tag;
 	}
 
 }

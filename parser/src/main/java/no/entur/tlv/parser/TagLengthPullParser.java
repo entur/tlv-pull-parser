@@ -112,17 +112,23 @@ public class TagLengthPullParser {
 	}
 	
 	/**
-	 * Write the tags (without lengths) of the remaining tag-length pairs to a stream. Stops at the first incomplete pair.
+	 * Write the tags (without lengths) of the remaining tag-length pairs to a stream. <code>00</code> padding before a
+	 * tag is skipped. Stops at the first incomplete pair.
+	 * <p>
+	 * This consumes the parser: the rest of the payload is read, so {@link #nextTag()} returns -1 and
+	 * {@link #getLength()} returns 0 afterwards, until a new payload is set.
 	 *
 	 * @param bout stream to write to
 	 * @return number of tags written
 	 */
-
 	public int writeTagsToStream(ByteArrayOutputStream bout) {
+		// no tag is current after this
+		this.length = 0;
+
 		int tagCount = 0;
 		while(true) {
-			// skip padding
-			while(offset < limit && (buffer[offset] == 0x00 || buffer[offset] == (byte) 0xFF)) {
+			// skip padding; only 00, as FF is a valid first tag byte in EMV (FF60, FF8106)
+			while(offset < limit && buffer[offset] == 0x00) {
 				offset++;
 			}
 
@@ -170,11 +176,13 @@ public class TagLengthPullParser {
 				int count = b & 0x7F;
 				offset += count;
 			}
-			if(offset <= limit) {
-				// the length fits
-				bout.write(buffer, startOffset, endOffset - startOffset);
-				tagCount++;
+			if(offset > limit) {
+				// not enough bytes for the length; leave the parser at the end
+				offset = limit;
+				return tagCount;
 			}
+			bout.write(buffer, startOffset, endOffset - startOffset);
+			tagCount++;
 		}		
 	}
 
