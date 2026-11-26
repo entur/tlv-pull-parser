@@ -86,6 +86,10 @@ public class TagLengthPullParser {
 		b = buffer[offset];
 		offset++;
 
+		if((b & 0xFF) == 0x80) {
+			// a tag-length list has a one-byte length (EMV Book 3, 5.4), so this is 128 rather than the indefinite length form
+			payloadLength = 128;
+		} else
 		if ((b & 0x80) == 0x00) {
 			/* short form */
 			payloadLength = b;

@@ -128,6 +128,12 @@ public class LenientTlvPullParser {
 		b = buffer[offset];
 		offset++;
 
+		if((b & 0xFF) == 0x80) {
+			// indefinite length, which ISO/IEC 7816-4 does not use
+			offset = limit;
+			return -1;
+		}
+
 		if ((b & 0x80) == 0x00) {
 			/* short form */
 			payloadLength = b;
