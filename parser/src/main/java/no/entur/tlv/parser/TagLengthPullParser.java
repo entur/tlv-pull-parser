@@ -4,7 +4,10 @@ import java.io.ByteArrayOutputStream;
 
 public class TagLengthPullParser {
 
-	protected byte[] buffer; 
+	private static final byte[] EMPTY = new byte[0];
+
+	// empty until a payload is set
+	protected byte[] buffer = EMPTY;
 	protected int limit;
 	protected int offset;
 	
@@ -31,6 +34,9 @@ public class TagLengthPullParser {
 	 */
 
 	public int nextTag() {
+		// no length until a tag has been read
+		this.length = 0;
+
 		if(offset >= limit) {
 			return -1;
 		}
@@ -133,6 +139,9 @@ public class TagLengthPullParser {
 		this.buffer = bytes;
 		this.offset = offset;
 		this.limit = offset + length;
+
+		// no length until a tag has been read
+		this.length = 0;
 	}
 	
 	/**
@@ -214,14 +223,23 @@ public class TagLengthPullParser {
 		setPayload(bytes, 0, bytes.length);
 	}
 	
+	/**
+	 * Set the array. The parser is empty until an offset and a length is set.
+	 *
+	 * @param bytes new buffer
+	 */
+
 	protected void setPayloadBuffer(byte[] bytes) {
-		this.buffer = bytes;
+		// the previous offset and limit do not apply to the new buffer
+		setPayload(bytes, 0, 0);
 	}
 	
 	protected void setPayloadOffsetLength(int offset, int length) {
 		this.offset = offset;
 		this.limit = offset + length;
-		this.length = length;
+
+		// no length until a tag has been read
+		this.length = 0;
 	}
 	
 	

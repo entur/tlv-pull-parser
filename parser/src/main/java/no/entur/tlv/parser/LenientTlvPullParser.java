@@ -40,7 +40,10 @@ public class LenientTlvPullParser {
 		return root;
 	}
 
-	private byte[] buffer;
+	private static final byte[] EMPTY = new byte[0];
+
+	// empty until a buffer is set
+	private byte[] buffer = EMPTY;
 	private int offset;
 	private int limit;
 	
@@ -62,7 +65,7 @@ public class LenientTlvPullParser {
 	}
 
 	/**
-	 * Get the next tag, or -1 if not more tags available.
+	 * Get the next tag, or -1 if not more tags available. After -1, the payload is empty.
 	 *
 	 * The value -1 is also returned if the data is malformed. If the tag is longer than 4 bytes (it does not fit in an int),
 	 * the parser stops: this and all later calls return -1, also if more data follows.
@@ -71,6 +74,10 @@ public class LenientTlvPullParser {
 	 */
 
 	public int nextTag() {
+		// no payload until a tag has been read
+		this.payloadOffset = offset;
+		this.payloadLength = 0;
+
 		if(offset >= limit) {
 			return -1;
 		}
@@ -180,7 +187,17 @@ public class LenientTlvPullParser {
 		return payload;
 	}
 
+	/**
+	 * Get the offset of the payload in the buffer. When there is no payload, this is the offset of the next tag.
+	 *
+	 * @return payload offset
+	 */
+
 	public int getBufferPayloadOffset() {
+		if(payloadLength == 0) {
+			// includes when no tag was returned
+			return offset;
+		}
 		return payloadOffset;
 	}
 	
@@ -194,9 +211,9 @@ public class LenientTlvPullParser {
 
 	public LenientTlvPullParser parseTagLengthValuePayload() {
 		if(tlvPayloadParser == null) {
-			tlvPayloadParser = new LenientTlvPullParser(buffer, payloadOffset, payloadLength);
+			tlvPayloadParser = new LenientTlvPullParser(buffer, getBufferPayloadOffset(), payloadLength);
 		} else {
-			tlvPayloadParser.setBufferOffsetLength(payloadOffset, payloadLength);
+			tlvPayloadParser.setBufferOffsetLength(getBufferPayloadOffset(), payloadLength);
 		}
 		
 		return tlvPayloadParser;
@@ -204,9 +221,9 @@ public class LenientTlvPullParser {
 	
 	public TagLengthPullParser parseTagLengthPayload() {
 		if(tagLengthPayloadParser == null) {
-			tagLengthPayloadParser = new TagLengthPullParser(buffer, payloadOffset, payloadLength);
+			tagLengthPayloadParser = new TagLengthPullParser(buffer, getBufferPayloadOffset(), payloadLength);
 		} else {
-			tagLengthPayloadParser.setPayloadOffsetLength(payloadOffset, payloadLength);
+			tagLengthPayloadParser.setPayloadOffsetLength(getBufferPayloadOffset(), payloadLength);
 		}
 		
 		return tagLengthPayloadParser;
@@ -227,9 +244,10 @@ public class LenientTlvPullParser {
 		this.buffer = bytes;
 		setBufferOffsetLength(offset, length);
 
-		// set array, but do not set offset/length on child parsers
+		// set array, but do not set offset/length on child parsers;
+		// they are empty until a payload is parsed
 		if(tlvPayloadParser != null) {
-			tlvPayloadParser.setBuffer(bytes);
+			tlvPayloadParser.setBuffer(bytes, 0, 0);
 		}
 		if(tagLengthPayloadParser != null) {
 			tagLengthPayloadParser.setPayloadBuffer(bytes);
@@ -242,6 +260,10 @@ public class LenientTlvPullParser {
 	protected void setBufferOffsetLength(int offset, int length) {
 		this.offset = offset;
 		this.limit = offset + length;
+
+		// no payload until a tag has been read
+		this.payloadOffset = offset;
+		this.payloadLength = 0;
 	}
 
 	public boolean skipTo(int targetTag) {
