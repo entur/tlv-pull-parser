@@ -148,4 +148,44 @@ public class TagLengthPullParserTest {
 		assertEquals(-1, parser.nextTag());
 	}
 
+	@Test
+	public void testLongFormLengthWithTruncatedLengthBytesSkipsTheRest() {
+		// 9F02 with 4 length bytes announced, but only 5A 01 follows
+		TagLengthPullParser parser = new TagLengthPullParser(HexFormat.of().parseHex("9F0284" + "5A01"));
+		assertEquals(-1, parser.nextTag());
+		assertEquals(-1, parser.nextTag());
+	}
+
+	@Test
+	public void testLongFormLengthWithTruncatedLengthBytesIsMalformed() {
+		// 2 length bytes announced, 1 present
+		TagLengthPullParser parser = new TagLengthPullParser(HexFormat.of().parseHex("9F028201"));
+		assertEquals(-1, parser.nextTag());
+		assertEquals(-1, parser.nextTag());
+
+		// 1 length byte announced, none present
+		parser = new TagLengthPullParser(HexFormat.of().parseHex("9F0281"));
+		assertEquals(-1, parser.nextTag());
+		assertEquals(-1, parser.nextTag());
+	}
+
+	@Test
+	public void testLongFormLengthWithFiveBytesIsMalformedEvenIfTheLengthFits() {
+		// 9F03 with length 85 00 00 00 00 02; ISO 7816-4 allows at most 4 length bytes
+		TagLengthPullParser parser = new TagLengthPullParser(HexFormat.of().parseHex("9F03850000000002" + "9F1A02"));
+		assertEquals(-1, parser.nextTag());
+		assertEquals(-1, parser.nextTag());
+	}
+
+	@Test
+	public void testLongFormLengthWithOneByte() {
+		// 9F03 with length 81 80 = 128, then 9F1A 02
+		TagLengthPullParser parser = new TagLengthPullParser(HexFormat.of().parseHex("9F038180" + "9F1A02"));
+		assertEquals(0x9F03, parser.nextTag());
+		assertEquals(128, parser.getLength());
+		assertEquals(0x9F1A, parser.nextTag());
+		assertEquals(2, parser.getLength());
+		assertEquals(-1, parser.nextTag());
+	}
+
 }

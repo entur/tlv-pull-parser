@@ -135,4 +135,78 @@ public class LenientTlvPullParserTest {
         assertEquals(-1, parser.nextTag());
     }
 
+    @Test
+    public void testLongFormLengthPastLimitSkipsTheRest() {
+        // 64 with length 82 01 00 = 256, but only 5A 01 12 follows; these bytes are payload, not a new tag
+        LenientTlvPullParser parser = new LenientTlvPullParser(HexFormat.of().parseHex("64820100" + "5A0112"));
+        assertEquals(-1, parser.nextTag());
+        assertEquals(-1, parser.nextTag());
+        assertEquals(-1, parser.nextTag());
+    }
+
+    @Test
+    public void testShortFormLengthPastLimitSkipsTheRest() {
+        // truncated: 6F with length 16, but only 84 02 5A 5B and 5A 01 12 follow
+        LenientTlvPullParser parser = new LenientTlvPullParser(HexFormat.of().parseHex("6F10" + "84025A5B" + "5A0112"));
+        assertEquals(-1, parser.nextTag());
+        assertEquals(-1, parser.nextTag());
+        assertEquals(-1, parser.nextTag());
+        assertEquals(-1, parser.nextTag());
+    }
+
+    @Test
+    public void testLongFormLengthWithTruncatedLengthBytesSkipsTheRest() {
+        // 64 with 4 length bytes announced, but only 5A 01 12 follows
+        LenientTlvPullParser parser = new LenientTlvPullParser(HexFormat.of().parseHex("6484" + "5A0112"));
+        assertEquals(-1, parser.nextTag());
+        assertEquals(-1, parser.nextTag());
+    }
+
+    @Test
+    public void testLongFormLengthWithTruncatedLengthBytesIsMalformed() {
+        // 2 length bytes announced, 1 present
+        LenientTlvPullParser parser = new LenientTlvPullParser(HexFormat.of().parseHex("648201"));
+        assertEquals(-1, parser.nextTag());
+        assertEquals(-1, parser.nextTag());
+
+        // 1 length byte announced, none present
+        parser = new LenientTlvPullParser(HexFormat.of().parseHex("6481"));
+        assertEquals(-1, parser.nextTag());
+        assertEquals(-1, parser.nextTag());
+    }
+
+    @Test
+    public void testLongFormLengthWithFiveBytesIsMalformedEvenIfTheLengthFits() {
+        // 64 with length 85 00 00 00 00 02; ISO 7816-4 allows at most 4 length bytes
+        LenientTlvPullParser parser = new LenientTlvPullParser(HexFormat.of().parseHex("648500000000024142" + "5A01FF"));
+        assertEquals(-1, parser.nextTag());
+        assertEquals(-1, parser.nextTag());
+    }
+
+    @Test
+    public void testLongFormLengthWithFourBytesUpToLimit() {
+        LenientTlvPullParser parser = new LenientTlvPullParser(HexFormat.of().parseHex("6484000000024142"));
+        assertEquals(0x64, parser.nextTag());
+        assertArrayEquals(new byte[]{0x41, 0x42}, parser.getPayload());
+        assertEquals(-1, parser.nextTag());
+
+        // one more than what is left
+        parser = new LenientTlvPullParser(HexFormat.of().parseHex("6484000000034142"));
+        assertEquals(-1, parser.nextTag());
+        assertEquals(-1, parser.nextTag());
+    }
+
+    @Test
+    public void testLongFormLengthWithOneByteUpToLimit() {
+        LenientTlvPullParser parser = new LenientTlvPullParser(HexFormat.of().parseHex("6481024142"));
+        assertEquals(0x64, parser.nextTag());
+        assertArrayEquals(new byte[]{0x41, 0x42}, parser.getPayload());
+        assertEquals(-1, parser.nextTag());
+
+        // one more than what is left
+        parser = new LenientTlvPullParser(HexFormat.of().parseHex("6481034142"));
+        assertEquals(-1, parser.nextTag());
+        assertEquals(-1, parser.nextTag());
+    }
+
 }
