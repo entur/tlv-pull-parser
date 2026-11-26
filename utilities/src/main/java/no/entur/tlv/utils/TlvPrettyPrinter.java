@@ -122,7 +122,7 @@ public class TlvPrettyPrinter {
 				if(offset >= limit) {
 					return;
 				}
-			} while(b == 0x00 || b == (byte) 0xFF); // padding (b is a sign-extended byte)
+			} while(b == 0x00); // padding; FF is not padding, it is a valid first tag byte in EMV
 
 			// after any padding
 			int tagStartOffset = offset - 1;
@@ -299,7 +299,7 @@ public class TlvPrettyPrinter {
 				if(offset >= limit) {
 					return;
 				}
-			} while(b == 0x00 || b == (byte) 0xFF); // padding (b is a sign-extended byte)
+			} while(b == 0x00); // padding; FF is not padding, it is a valid first tag byte in EMV
 
 			// after any padding
 			int tagStartOffset = offset - 1;
@@ -399,7 +399,7 @@ public class TlvPrettyPrinter {
 				if(offset >= limit) {
 					return;
 				}
-			} while(b == 0x00 || b == (byte) 0xFF); // padding (b is a sign-extended byte)
+			} while(b == 0x00); // padding; FF is not padding, it is a valid first tag byte in EMV
 
 			// after any padding
 			int tagStartOffset = offset - 1;
