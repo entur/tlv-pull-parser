@@ -1,5 +1,6 @@
 package no.entur.tlv.parser;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -100,16 +101,36 @@ public class EmvCardResponsesTest {
 
 	private static int tagLengthEntries(LenientTlvPullParser parser, String message) {
 		TagLengthPullParser tagLengthParser = parser.parseTagLengthPayload();
+		ByteArrayOutputStream tags = new ByteArrayOutputStream();
 		int entries = 0;
-		while (tagLengthParser.nextTag() != -1) {
+		int tag;
+		while ((tag = tagLengthParser.nextTag()) != -1) {
+			writeTag(tag, tags);
 			entries++;
 		}
 
-		// the same tags are written
+		// the same tags are written, in the same order
 		TagLengthPullParser writer = new TagLengthPullParser(parser.getBuffer(), parser.getBufferPayloadOffset(), parser.getBufferPayloadLength());
-		assertEquals(entries, writer.writeTagsToStream(new ByteArrayOutputStream()), message);
+		ByteArrayOutputStream written = new ByteArrayOutputStream();
+		assertEquals(entries, writer.writeTagsToStream(written), message);
+		assertArrayEquals(tags.toByteArray(), written.toByteArray(), message);
 
 		return entries;
+	}
+
+	// the tag bytes as on the card: nextTag() leaves out the 'more bytes follow' bit of the bytes between the first and the last
+	private static void writeTag(int tag, ByteArrayOutputStream out) {
+		int length = 1;
+		while (length < 4 && (tag >>> (length * 8)) != 0) {
+			length++;
+		}
+		for (int i = length - 1; i >= 0; i--) {
+			int b = (tag >>> (i * 8)) & 0xFF;
+			if (i > 0 && i < length - 1) {
+				b |= 0x80;
+			}
+			out.write(b);
+		}
 	}
 
 	private static boolean isTagLengthList(int tag) {
