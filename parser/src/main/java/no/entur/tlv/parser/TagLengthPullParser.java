@@ -111,15 +111,23 @@ public class TagLengthPullParser {
 		this.limit = offset + length;
 	}
 	
+	/**
+	 * Write the tags (without lengths) of the remaining tag-length pairs to a stream. Stops at the first incomplete pair.
+	 *
+	 * @param bout stream to write to
+	 * @return number of tags written
+	 */
+
 	public int writeTagsToStream(ByteArrayOutputStream bout) {
 		int tagCount = 0;
 		while(true) {
+			// skip padding
+			while(offset < limit && (buffer[offset] == 0x00 || buffer[offset] == (byte) 0xFF)) {
+				offset++;
+			}
+
 			if(offset >= limit) {
 				return tagCount;
-			}
-			
-			while(buffer[offset] == 0x00 || buffer[offset] == 0xFF) {
-				offset++;
 			}
 
 			int startOffset = offset;
@@ -162,8 +170,10 @@ public class TagLengthPullParser {
 				int count = b & 0x7F;
 				offset += count;
 			}
-			if(limit <= offset) {
+			if(offset <= limit) {
+				// the length fits
 				bout.write(buffer, startOffset, endOffset - startOffset);
+				tagCount++;
 			}
 		}		
 	}
