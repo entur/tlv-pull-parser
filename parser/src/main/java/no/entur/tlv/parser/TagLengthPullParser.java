@@ -22,10 +22,13 @@ public class TagLengthPullParser {
 	}
 
 	public int nextTag() {
+		// no length until a tag has been read
+		this.length = 0;
+
 		if(offset >= limit) {
 			return -1;
 		}
-		
+
 		int tag = -1;
 		int b;
 		do {

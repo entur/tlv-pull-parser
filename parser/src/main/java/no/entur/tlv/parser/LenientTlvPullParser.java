@@ -62,12 +62,16 @@ public class LenientTlvPullParser {
 	}
 
 	/**
-	 * Get the next tag, or -1 if not more tags available.
+	 * Get the next tag, or -1 if not more tags available. After -1, the payload is empty.
 	 *
 	 * @return next tag
 	 */
 
 	public int nextTag() {
+		// no payload until a tag has been read
+		this.payloadOffset = offset;
+		this.payloadLength = 0;
+
 		if(offset >= limit) {
 			return -1;
 		}
@@ -225,6 +229,10 @@ public class LenientTlvPullParser {
 	protected void setBufferOffsetLength(int offset, int length) {
 		this.offset = offset;
 		this.limit = offset + length;
+
+		// no payload until a tag has been read
+		this.payloadOffset = offset;
+		this.payloadLength = 0;
 	}
 
 	public boolean skipTo(int targetTag) {
