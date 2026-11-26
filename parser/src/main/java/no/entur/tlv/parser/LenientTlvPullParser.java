@@ -126,8 +126,9 @@ public class LenientTlvPullParser {
 		} else {
 			/* long form */
 			int count = b & 0x7F;
-			if(offset + count > limit) {
-				// not enough bytes for count
+			if(count > 4 || count > limit - offset) {
+				// length does not fit in an int, or not enough bytes for count
+				offset = limit;
 				return -1;
 			}
 			
@@ -141,7 +142,9 @@ public class LenientTlvPullParser {
 			}
 		}
 		
-		if(offset + payloadLength > limit) {
+		if(payloadLength < 0 || payloadLength > limit - offset) {
+			// length does not fit in an int, or not enough bytes for payload
+			offset = limit;
 			return -1;
 		}
 

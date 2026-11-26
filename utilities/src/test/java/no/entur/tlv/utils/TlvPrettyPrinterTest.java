@@ -12,6 +12,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TlvPrettyPrinterTest {
@@ -72,6 +73,170 @@ public class TlvPrettyPrinterTest {
 		String prettyPrinted = PRETTY_PRINTER.tlv(MESSAGE3).toString();
 		System.out.println(prettyPrinted);
 		assertTrue(prettyPrinted.contains("Processing Options Data Object List (PDOL)"));
+	}
+
+	private static final String PAN = "-- Application Primary Account Number (PAN) ";
+
+	private static String tlv(String hex) {
+		return PRETTY_PRINTER.tlv(HexFormat.of().parseHex(hex)).toString();
+	}
+
+	private static String tl(String hex) {
+		byte[] bytes = HexFormat.of().parseHex(hex);
+		StringBuilder output = new StringBuilder();
+		PRETTY_PRINTER.tl(bytes, 0, bytes.length, output, 0, 0);
+		return output.toString();
+	}
+
+	private static String tagLengthWithExternalValue(String hex, String values, int valuesOffset) {
+		byte[] bytes = HexFormat.of().parseHex(hex);
+		StringBuilder output = new StringBuilder();
+		PRETTY_PRINTER.tagLengthWithExternalValue(bytes, 0, bytes.length, output, 0, 0, HexFormat.of().parseHex(values), valuesOffset);
+		return output.toString();
+	}
+
+	@Test
+	public void testLongFormLengthOverflowingToNegativeIsMalformed() {
+		// 5A 02 12 34, then 5A with length 84 80 00 00 00 = 0x80000000, which is negative as an int
+		assertEquals("5A 02 " + PAN + "\n      12 34 \n5A 84 " + PAN + "[malformed length]\n", tlv("5A021234" + "5A84800000004142"));
+	}
+
+	@Test
+	public void testLongFormLengthOverflowingOffsetIsMalformed() {
+		// 5A 02 12 34, then 5A with length 84 7F FF FF FF = Integer.MAX_VALUE, so offset + length overflows
+		assertEquals("5A 02 " + PAN + "\n      12 34 \n5A 84 " + PAN + "[malformed length]\n", tlv("5A021234" + "5A847FFFFFFF4142"));
+	}
+
+	@Test
+	public void testLongFormLengthWithMoreBytesThanFitInAnIntIsMalformed() {
+		// 5A 02 12 34, then 5A with length 85 01 00 00 00 00 = 2^32, which truncates to 0 as an int
+		assertEquals("5A 02 " + PAN + "\n      12 34 \n5A 85 " + PAN + "[malformed length]\n", tlv("5A021234" + "5A8501000000004142"));
+	}
+
+	@Test
+	public void testLongFormLengthWithFiveBytesIsMalformedEvenIfTheLengthFits() {
+		// 5A with length 85 00 00 00 00 02; ISO 7816-4 allows at most 4 length bytes
+		assertEquals("5A 85 " + PAN + "[malformed length]\n", tlv("5A8500000000024142" + "5A01FF"));
+	}
+
+	@Test
+	public void testLongFormLengthWithTruncatedLengthBytesIsMalformed() {
+		// 2 length bytes announced, 1 present
+		assertEquals("5A 82 " + PAN + "[malformed length]\n", tlv("5A8201"));
+		// 1 length byte announced, none present
+		assertEquals("5A 81 " + PAN + "[malformed length]\n", tlv("5A81"));
+	}
+
+	@Test
+	public void testLongFormLengthPastLimitIsMalformed() {
+		// 5A 02 12 34, then 5A with length 82 01 00 = 256, but no payload
+		assertEquals("5A 02 " + PAN + "\n      12 34 \n5A 82 " + PAN + "[malformed length]\n", tlv("5A021234" + "5A820100"));
+	}
+
+	@Test
+	public void testMalformedLengthOfTagWithoutDescription() {
+		assertEquals("C1 82 [malformed length]\n", tlv("C18201"));
+	}
+
+	@Test
+	public void testMalformedLengthWithinConstructedTag() {
+		// 6F 08 with 5A 02 12 34, then 5A with length 82 01 00 = 256
+		assertEquals("6F 08 -- Template, File Control Parameters and File Management Data (FCI) \n"
+				+ "      5A 02 " + PAN + "\n"
+				+ "            12 34 \n"
+				+ "      5A 82 " + PAN + "[malformed length]\n", tlv("6F08" + "5A021234" + "5A820100"));
+	}
+
+	@Test
+	public void testLongFormLengthWithFourBytesUpToLimit() {
+		assertEquals("5A 84 " + PAN + "\n      41 42 \n", tlv("5A84000000024142"));
+		// one more than what is left
+		assertEquals("5A 84 " + PAN + "[malformed length]\n", tlv("5A84000000034142"));
+	}
+
+	@Test
+	public void testLongFormLengthWithOneByteUpToLimit() {
+		assertEquals("5A 81 " + PAN + "\n      41 42 \n", tlv("5A81024142"));
+		// one more than what is left
+		assertEquals("5A 81 " + PAN + "[malformed length]\n", tlv("5A81034142"));
+	}
+
+	@Test
+	public void testTagLengthLongFormLengthWithMoreBytesThanFitInAnIntIsMalformed() {
+		// 9F02 with length 85 01 00 00 00 00 = 2^32, then 9F03 01
+		assertEquals("9F 02 85 -- Authorised Amount (Numeric) [malformed length]\n", tl("9F02850100000000" + "9F0301"));
+		// 9F02 06, then 9F03 with length 85 00 00 00 00 01
+		assertEquals("9F 02 06 -- Authorised Amount (Numeric)\n9F 03 85 -- Amount, Other (Numeric) [malformed length]\n", tl("9F0206" + "9F03850000000001"));
+	}
+
+	@Test
+	public void testTagLengthLongFormLengthOverflowingToNegativeIsMalformed() {
+		// 9F02 with length 84 80 00 00 00 = 0x80000000, which is negative as an int, then 9F03 01
+		assertEquals("9F 02 84 -- Authorised Amount (Numeric) [malformed length]\n", tl("9F028480000000" + "9F0301"));
+	}
+
+	@Test
+	public void testTagLengthLongFormLengthWithTruncatedLengthBytesIsMalformed() {
+		// 2 length bytes announced, 1 present
+		assertEquals("9F 02 82 -- Authorised Amount (Numeric) [malformed length]\n", tl("9F028201"));
+		// tag without description
+		assertEquals("C1 82 [malformed length]\n", tl("C18201"));
+	}
+
+	@Test
+	public void testTagLengthLongFormLength() {
+		// 9F02 with length 84 00 00 00 06, then 9F03 01
+		assertEquals("9F 02 84 -- Authorised Amount (Numeric)\n9F 03 01 -- Amount, Other (Numeric)\n", tl("9F028400000006" + "9F0301"));
+		// 9F02 with length 81 06, then 9F03 01
+		assertEquals("9F 02 81 -- Authorised Amount (Numeric)\n9F 03 01 -- Amount, Other (Numeric)\n", tl("9F028106" + "9F0301"));
+	}
+
+	@Test
+	public void testTagLengthWithExternalValueLongFormLengthOverflowingToNegativeIsMalformed() {
+		// 9F02 with length 84 80 00 00 00 = 0x80000000, which is negative as an int, then 9F03 01
+		assertEquals("9F 02 84 [malformed length]\n", tagLengthWithExternalValue("9F028480000000" + "9F0301", "010203", 0));
+	}
+
+	@Test
+	public void testTagLengthWithExternalValueLongFormLengthWithFiveBytesIsMalformedEvenIfTheLengthFits() {
+		// 9F02 with length 85 00 00 00 00 02; ISO 7816-4 allows at most 4 length bytes
+		assertEquals("9F 02 85 [malformed length]\n", tagLengthWithExternalValue("9F02850000000002", "010203", 0));
+	}
+
+	@Test
+	public void testTagLengthWithExternalValueLongFormLengthWithTruncatedLengthBytesIsMalformed() {
+		// 2 length bytes announced, 1 present
+		assertEquals("9F 02 82 [malformed length]\n", tagLengthWithExternalValue("9F028201", "010203", 0));
+	}
+
+	@Test
+	public void testTagLengthWithExternalValueLengthPastValuesIsMalformed() {
+		// 9F02 06, but only three value bytes
+		assertEquals("9F 02 06 [malformed length]\n", tagLengthWithExternalValue("9F0206", "010203", 0));
+		// C1 02, then 9F03 02, but only one value byte left for it
+		assertEquals("C1 02 :\n      01 02\n9F 03 02 [malformed length]\n", tagLengthWithExternalValue("C102" + "9F0302", "010203", 0));
+	}
+
+	@Test
+	public void testTagLengthWithExternalValueUpToEndOfValues() {
+		assertEquals("9F 02 03 -- Authorised Amount (Numeric):\n         01 02 03\n", tagLengthWithExternalValue("9F0203", "010203", 0));
+	}
+
+	@Test
+	public void testTagLengthWithExternalValueAtValuesOffset() {
+		assertEquals("9F 02 02 -- Authorised Amount (Numeric):\n         02 03\n", tagLengthWithExternalValue("9F0202", "010203", 1));
+		// one value byte left
+		assertEquals("9F 02 02 [malformed length]\n", tagLengthWithExternalValue("9F0202", "010203", 2));
+		// offset past the values
+		assertEquals("9F 02 02 [malformed length]\n", tagLengthWithExternalValue("9F0202", "010203", 4));
+	}
+
+	@Test
+	public void testTagLengthWithExternalValue() {
+		// 9F02 with length 81 02, then 9F03 01
+		assertEquals("9F 02 81 -- Authorised Amount (Numeric):\n         01 02\n9F 03 01 -- Amount, Other (Numeric):\n         03\n", tagLengthWithExternalValue("9F028102" + "9F0301", "010203", 0));
+		// 9F02 with length 84 00 00 00 02, then 9F03 01
+		assertEquals("9F 02 84 -- Authorised Amount (Numeric):\n         01 02\n9F 03 01 -- Amount, Other (Numeric):\n         03\n", tagLengthWithExternalValue("9F028400000002" + "9F0301", "010203", 0));
 	}
 
 }

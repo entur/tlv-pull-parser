@@ -197,8 +197,9 @@ public class TlvPrettyPrinter {
 			} else {
 				/* long form */
 				int count = b & 0x7F;
-				if(offset + count > limit) {
-					// not enough bytes for count
+				if(count > 4 || count > limit - offset) {
+					// length does not fit in an int, or not enough bytes for count
+					malformedLength(stringBuilder);
 					return;
 				}
 
@@ -212,7 +213,9 @@ public class TlvPrettyPrinter {
 				}
 			}
 
-			if(offset + payloadLength > limit) {
+			if(payloadLength < 0 || payloadLength > limit - offset) {
+				// length does not fit in an int, or not enough bytes for payload
+				malformedLength(stringBuilder);
 				return;
 			}
 
@@ -368,8 +371,9 @@ public class TlvPrettyPrinter {
 			} else {
 				/* long form */
 				int count = b & 0x7F;
-				if(offset + count > limit) {
-					// not enough bytes for count
+				if(count > 4 || count > limit - offset) {
+					// length does not fit in an int, or not enough bytes for count
+					malformedLength(stringBuilder);
 					return;
 				}
 
@@ -381,6 +385,12 @@ public class TlvPrettyPrinter {
 					payloadLength <<= 8;
 					payloadLength += b & 0xFF;
 				}
+			}
+
+			if(payloadLength < 0) {
+				// length does not fit in an int
+				malformedLength(stringBuilder);
+				return;
 			}
 
 			stringBuilder.append('\n');
@@ -459,8 +469,9 @@ public class TlvPrettyPrinter {
 			} else {
 				/* long form */
 				int count = b & 0x7F;
-				if(offset + count > limit) {
-					// not enough bytes for count
+				if(count > 4 || count > limit - offset) {
+					// length does not fit in an int, or not enough bytes for count
+					malformedLength(stringBuilder);
 					return;
 				}
 
@@ -474,6 +485,12 @@ public class TlvPrettyPrinter {
 				}
 			}
 			
+			if(payloadLength < 0 || payloadLength > values.length - valuesOffset) {
+				// length does not fit in an int, or not enough bytes for value
+				malformedLength(stringBuilder);
+				return;
+			}
+
 			ByteArrayKey key = new ByteArrayKey(buffer, tagStartOffset, tagLength);
 			String description = tags.get(key);
 			if(description != null)  {
@@ -509,6 +526,14 @@ public class TlvPrettyPrinter {
 			valuesOffset += payloadLength;
 			
 		}
+	}
+
+	private static void malformedLength(StringBuilder stringBuilder) {
+		// end the line of an element which is not printed further, so that the output stays well-formed
+		if(stringBuilder.length() > 0 && stringBuilder.charAt(stringBuilder.length() - 1) != ' ') {
+			stringBuilder.append(' ');
+		}
+		stringBuilder.append("[malformed length]\n");
 	}
 
 }

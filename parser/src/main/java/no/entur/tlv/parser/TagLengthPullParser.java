@@ -78,8 +78,9 @@ public class TagLengthPullParser {
 		} else {
 			/* long form */
 			int count = b & 0x7F;
-			if(offset + count > limit) {
-				// not enough bytes for count
+			if(count > 4 || count > limit - offset) {
+				// length does not fit in an int, or not enough bytes for count
+				offset = limit;
 				return -1;
 			}
 			
@@ -90,6 +91,11 @@ public class TagLengthPullParser {
 
 				payloadLength <<= 8;
 				payloadLength += b & 0xFF;
+			}
+			if(payloadLength < 0) {
+				// length does not fit in an int
+				offset = limit;
+				return -1;
 			}
 		}
 		this.length = payloadLength;
