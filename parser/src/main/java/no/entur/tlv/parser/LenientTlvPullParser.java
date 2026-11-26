@@ -64,7 +64,10 @@ public class LenientTlvPullParser {
 	/**
 	 * Get the next tag, or -1 if not more tags available.
 	 *
-	 * @return next tag
+	 * The value -1 is also returned if the data is malformed. If the tag is longer than 4 bytes (it does not fit in an int),
+	 * the parser stops: this and all later calls return -1, also if more data follows.
+	 *
+	 * @return next tag, or -1
 	 */
 
 	public int nextTag() {

@@ -21,6 +21,15 @@ public class TagLengthPullParser {
 		setPayload(buffer, offset, length);
 	}
 
+	/**
+	 * Get the next tag, or -1 if no more tags are available.
+	 *
+	 * The value -1 is also returned if the data is malformed. If the tag is longer than 4 bytes (it does not fit in an int),
+	 * the parser stops: this and all later calls return -1, also if more data follows.
+	 *
+	 * @return next tag, or -1
+	 */
+
 	public int nextTag() {
 		if(offset >= limit) {
 			return -1;
