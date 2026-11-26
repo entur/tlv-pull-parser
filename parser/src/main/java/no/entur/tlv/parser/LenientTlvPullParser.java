@@ -93,6 +93,11 @@ public class LenientTlvPullParser {
 				return -1;
 			}
 			while ((b & 0x80) == 0x80) {
+				if((tag >>> 16) != 0) {
+					// tag of more than 4 bytes, which does not fit in an int
+					offset = limit;
+					return -1;
+				}
 				tag <<= 8;
 				tag |= (b & 0x7F);
 				b = buffer[offset];
